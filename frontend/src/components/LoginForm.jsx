@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import axios from "../axiosInstance"; 
 import { Link, useNavigate } from "react-router-dom";
 import {
   TextField,
@@ -8,6 +8,7 @@ import {
   Box,
   Alert,
   Tooltip,
+  Snackbar,
 } from "@mui/material";
 
 const LoginForm = () => {
@@ -18,8 +19,19 @@ const LoginForm = () => {
 
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
-  const [token, setToken] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem("sessionExpired")) {
+      setSnackbarOpen(true);
+      localStorage.removeItem("sessionExpired");
+    }
+  }, []);
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  }
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -43,6 +55,7 @@ const LoginForm = () => {
 
 
       setMessage("Login successful!");
+      navigate("/dashboard");
 
       setForm({
         username: "",
@@ -165,6 +178,20 @@ const LoginForm = () => {
             Create One
           </Link>
         </Typography>
+
+        <Snackbar
+          open={snackbarOpen}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert
+            onClose={handleSnackbarClose}
+            severity="warning"
+            sx={{ width: "100%", color:"#212427" }}
+          >
+            Your session has expired. Please sign in again.
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
   );
